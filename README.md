@@ -5,13 +5,14 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy import stats
 
 pd.set_option('display.max_columns', None)
 ```
 
-For this exercise we will work through the different steps of a linear regression workflow.  We will:
+For this exercise we will work through the different steps of a linear regression workflow. The notebook will walk you through building a first simple model and improving upon that model by stepwise iteration.
 
-### 1. FSM
+### 1. First Simple Model
 - Load in the dataset: inspect the overall shape, duplicate entries, and na's.
 - Identify the continuous target variable
 - Perform Initial EDA: correlation plots
@@ -54,17 +55,30 @@ The following questions have been posed. Read them and keep them in your mind wh
 ```python
 # load in the dataset
 df = None
+```
 
+
+```python
 # How many records are in the data set?
 records = None
+```
 
+
+```python
 # How many columns are in the dataset?
 columns = None
+```
 
+
+```python
 # Check for duplicate entries
+# Your answer here
+```
 
+
+```python
 # Check for na's (just look to get an idea; don't drop or impute yet)
-
+# Your answer here
 ```
 
 ### What does a row in the dataframe represent?
@@ -77,7 +91,7 @@ columns = None
 
 ### Identify the continous target variable
 
-If you had problems isolating that variable, don't worry.  That is on purpose! 
+If you had problems isolating that variable, don't worry.  That is expected! 
 There can be odd, burdensome inconsistencies in naming of data.
 Let's use our Python skills to wipe out the naming inconsistencies.
 
@@ -104,185 +118,9 @@ columns = None
 
 
 ```python
-df.head()
+# Check to make sure the changes are reflected in the dataset
+# df.head()
 ```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>life_expectancy</th>
-      <th>country</th>
-      <th>year</th>
-      <th>status</th>
-      <th>adult_mortality</th>
-      <th>infant_deaths</th>
-      <th>alcohol</th>
-      <th>percentage_expenditure</th>
-      <th>hepatitis_b</th>
-      <th>measles</th>
-      <th>bmi</th>
-      <th>under-five_deaths</th>
-      <th>polio</th>
-      <th>total_expenditure</th>
-      <th>diphtheria</th>
-      <th>hiv/aids</th>
-      <th>gdp</th>
-      <th>population</th>
-      <th>thinness__1-19_years</th>
-      <th>thinness_5-9_years</th>
-      <th>income_composition_of_resources</th>
-      <th>schooling</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>65.0</td>
-      <td>Afghanistan</td>
-      <td>2015</td>
-      <td>Developing</td>
-      <td>263.0</td>
-      <td>62</td>
-      <td>0.01</td>
-      <td>71.279624</td>
-      <td>65.0</td>
-      <td>1154</td>
-      <td>19.1</td>
-      <td>83</td>
-      <td>6.0</td>
-      <td>8.16</td>
-      <td>65.0</td>
-      <td>0.1</td>
-      <td>584.259210</td>
-      <td>33736494.0</td>
-      <td>17.2</td>
-      <td>17.3</td>
-      <td>0.479</td>
-      <td>10.1</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>59.9</td>
-      <td>Afghanistan</td>
-      <td>2014</td>
-      <td>Developing</td>
-      <td>271.0</td>
-      <td>64</td>
-      <td>0.01</td>
-      <td>73.523582</td>
-      <td>62.0</td>
-      <td>492</td>
-      <td>18.6</td>
-      <td>86</td>
-      <td>58.0</td>
-      <td>8.18</td>
-      <td>62.0</td>
-      <td>0.1</td>
-      <td>612.696514</td>
-      <td>327582.0</td>
-      <td>17.5</td>
-      <td>17.5</td>
-      <td>0.476</td>
-      <td>10.0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>59.9</td>
-      <td>Afghanistan</td>
-      <td>2013</td>
-      <td>Developing</td>
-      <td>268.0</td>
-      <td>66</td>
-      <td>0.01</td>
-      <td>73.219243</td>
-      <td>64.0</td>
-      <td>430</td>
-      <td>18.1</td>
-      <td>89</td>
-      <td>62.0</td>
-      <td>8.13</td>
-      <td>64.0</td>
-      <td>0.1</td>
-      <td>631.744976</td>
-      <td>31731688.0</td>
-      <td>17.7</td>
-      <td>17.7</td>
-      <td>0.470</td>
-      <td>9.9</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>59.5</td>
-      <td>Afghanistan</td>
-      <td>2012</td>
-      <td>Developing</td>
-      <td>272.0</td>
-      <td>69</td>
-      <td>0.01</td>
-      <td>78.184215</td>
-      <td>67.0</td>
-      <td>2787</td>
-      <td>17.6</td>
-      <td>93</td>
-      <td>67.0</td>
-      <td>8.52</td>
-      <td>67.0</td>
-      <td>0.1</td>
-      <td>669.959000</td>
-      <td>3696958.0</td>
-      <td>17.9</td>
-      <td>18.0</td>
-      <td>0.463</td>
-      <td>9.8</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>59.2</td>
-      <td>Afghanistan</td>
-      <td>2011</td>
-      <td>Developing</td>
-      <td>275.0</td>
-      <td>71</td>
-      <td>0.01</td>
-      <td>7.097109</td>
-      <td>68.0</td>
-      <td>3013</td>
-      <td>17.2</td>
-      <td>97</td>
-      <td>68.0</td>
-      <td>7.87</td>
-      <td>68.0</td>
-      <td>0.1</td>
-      <td>63.537231</td>
-      <td>2978599.0</td>
-      <td>18.2</td>
-      <td>18.2</td>
-      <td>0.454</td>
-      <td>9.5</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 
 ```python
@@ -293,7 +131,19 @@ df.head()
 
 ```python
 # Revisit the continuous target variable.  
-# Explore it a bit.  Plot a histogram of its distribution as well a boxplot
+# Explore it a bit.  Plot a histogram of its distribution as well as a boxplot
+```
+
+
+```python
+df.sort_values('life_expectancy').head(10)
+df[df.country=='Haiti']
+```
+
+
+```python
+# Describe the distribution of the target
+# Look at the min value? What happened in Haiti in 2010?
 ```
 
 ## Perform Initial EDA
@@ -305,27 +155,32 @@ There are a lot of variables here!  Let's look at a correlation matrix to see wh
 # create a correlation matrix
 # first, just use the datafram .corr() method to output a numerical matrix
 
+# Your answer here
 ```
 
 
 ```python
 # Then pass the above code into Seaborn's heatmap plot
 
+# Your answer here
 ```
 
 
 ```python
 # Try adding the code in this cell to the mask attribute in the heatmap to halve the plot
 mask = np.triu(np.ones_like(df.corr(), dtype=np.bool))
+
+# Your answer here
 ```
 
 
 ```python
 # Judging from the correlation matrix or the heatmap, which three features have the highest positive correlation? 
 
+# Your answer here
 ```
 
-Use seaborn's pairplot function on the three features above plus life_expectancy.  
+### Use seaborn's pairplot function on the three features above plus life_expectancy.  
 Note: we would usually start right off by using a pairplot, but because we have so many features, the pairplot would be unwieldy.
 
 
@@ -335,7 +190,7 @@ Note: we would usually start right off by using a pairplot, but because we have 
 
 Judging from the top row of the pairplot, one feature's correlation to the target is a bit fuzzier than the rest. 
 Inspecting other cells of the pairplot, the other two features show covariance. 
-Given those two insights, choose one feature to build the First Simple Model with.
+Given those two insights, choose one feature to build the First Simple Model with. (Our FSM will be simple the target and one predictor).
 Consider also whether choosing one of the positively correlated features above the others would help answer any of the question listed at the beginning of the notebook.
 
 
@@ -347,11 +202,23 @@ Consider also whether choosing one of the positively correlated features above t
 from statsmodels.formula.api import ols
 # Create a dataframe with only the target and the chosen high-positive corellation feature
 fsm_df = None
+```
+
+
+```python
 # For this FSM, simply dropnas.
 
+# your code here
+```
+
+
+```python
 # build the R-style formula. The format is "target~feature_1 + feature_2 + feature_3"
 formula = None
+```
 
+
+```python
 # Fit the model on the dataframe composed of the two features
 fsm = ols(formula=formula, data=fsm_df).fit()
 ```
@@ -361,67 +228,6 @@ fsm = ols(formula=formula, data=fsm_df).fit()
 # Use the summary() method on the fsm varaible to print out the results of the fit.
 fsm.summary()
 ```
-
-
-
-
-<table class="simpletable">
-<caption>OLS Regression Results</caption>
-<tr>
-  <th>Dep. Variable:</th>     <td>life_expectancy</td> <th>  R-squared:         </th> <td>   0.565</td> 
-</tr>
-<tr>
-  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.565</td> 
-</tr>
-<tr>
-  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   3599.</td> 
-</tr>
-<tr>
-  <th>Date:</th>             <td>Wed, 10 Jun 2020</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
-</tr>
-<tr>
-  <th>Time:</th>                 <td>14:44:43</td>     <th>  Log-Likelihood:    </th> <td> -8964.3</td> 
-</tr>
-<tr>
-  <th>No. Observations:</th>      <td>  2768</td>      <th>  AIC:               </th> <td>1.793e+04</td>
-</tr>
-<tr>
-  <th>Df Residuals:</th>          <td>  2766</td>      <th>  BIC:               </th> <td>1.794e+04</td>
-</tr>
-<tr>
-  <th>Df Model:</th>              <td>     1</td>      <th>                     </th>     <td> </td>    
-</tr>
-<tr>
-  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>    
-</tr>
-</table>
-<table class="simpletable">
-<tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th> <td>   44.1089</td> <td>    0.437</td> <td>  100.992</td> <td> 0.000</td> <td>   43.252</td> <td>   44.965</td>
-</tr>
-<tr>
-  <th>schooling</th> <td>    2.1035</td> <td>    0.035</td> <td>   59.995</td> <td> 0.000</td> <td>    2.035</td> <td>    2.172</td>
-</tr>
-</table>
-<table class="simpletable">
-<tr>
-  <th>Omnibus:</th>       <td>283.391</td> <th>  Durbin-Watson:     </th> <td>   0.267</td> 
-</tr>
-<tr>
-  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>1122.013</td> 
-</tr>
-<tr>
-  <th>Skew:</th>          <td>-0.445</td>  <th>  Prob(JB):          </th> <td>2.28e-244</td>
-</tr>
-<tr>
-  <th>Kurtosis:</th>      <td> 5.989</td>  <th>  Cond. No.          </th> <td>    46.7</td> 
-</tr>
-</table><br/><br/>Warnings:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
-
-
 
 
 ```python
@@ -437,19 +243,13 @@ print('Beta values of FSM:')
 print(params)
 ```
 
-    Rsquared of FSM: None
-    ----------
-    Beta values of FSM:
-    None
-
-
 Interpret the result of the FSM.  What does the R Squared tell you? Remember the formula for:
 
 $\Large R^2 = 1 - \frac{SSE}{SST}$
 
 Also, interepret the coefficients.  If we increase the value of our independent variable by 1, what does it mean for our predicted value?
 
-What is will our model predict the value of Life Expectancy to be for a country with 0 years of school on average?
+What will our model predict the value of Life Expectancy to be for a country with 0 years of school on average?
 
 
 ```python
@@ -460,7 +260,7 @@ What is will our model predict the value of Life Expectancy to be for a country 
 
 #### 1. Linearity
 
-Linear regression assumes that the input variable linearly predicts the output variable.  We already qualitatively checked that with a scatter plot.  But I also think it's a good idea to use a statistical test.  This one is the [Rainbow test](https://www.tandfonline.com/doi/abs/10.1080/03610928208828423) which is available from the [diagnostic submodule of StatsModels](https://www.statsmodels.org/stable/generated/statsmodels.stats.diagnostic.linear_rainbow.html#statsmodels.stats.diagnostic.linear_rainbow)
+Linear regression assumes that the input variable linearly predicts the output variable.  We already qualitatively checked that with a scatter plot.  But it's also a good idea to use a statistical test.  This one is the [Rainbow test](https://www.tandfonline.com/doi/abs/10.1080/03610928208828423) which is available from the [diagnostic submodule of StatsModels](https://www.statsmodels.org/stable/generated/statsmodels.stats.diagnostic.linear_rainbow.html#statsmodels.stats.diagnostic.linear_rainbow)
 
 
 ```python
@@ -472,15 +272,11 @@ print("Rainbow statistic:", rainbow_statistic)
 print("Rainbow p-value:", rainbow_p_value)
 ```
 
-    Rainbow statistic: 1.2910159786411675
-    Rainbow p-value: 1.057579656507341e-06
-
-
 The null hypothesis is that the model is linearly predicted by the features, alternative hypothesis is that it is not.  Thus returning a low p-value means that the current model violates the linearity assumption.
 
 #### 2. Normality
 
-Linear regression assumes that the residuals are normally distributed.  It is possible to check this qualitatively with a Q-Q plot.  The fit model object has an attribute called resid, which is an array of the difference between predicted and real values.  Store the residuals in the variable below, show the qq plot, and interepret. You are looking for the theoretical quantiles and the sample quantiles to line up.
+Linear regression assumes that the residuals are normally distributed.  It is possible to check this qualitatively with a Q-Q plot.  The fit model object has an attribute called resid, which is an array of the difference between predicted and true values.  Store the residuals in the variable below, show the qq plot, and interepret. You are looking for the theoretical quantiles and the sample quantiles to line up.
 
 
 ```python
@@ -492,37 +288,7 @@ import statsmodels.api as sm
 sm.qqplot(fsm_resids)
 ```
 
-
-    ---------------------------------------------------------------------------
-
-    AttributeError                            Traceback (most recent call last)
-
-    <ipython-input-228-5542eb51c044> in <module>
-          4 
-          5 import statsmodels.api as sm
-    ----> 6 sm.qqplot(fsm_resids)
-    
-
-    ~/anaconda3/lib/python3.7/site-packages/statsmodels/graphics/gofplots.py in qqplot(data, dist, distargs, a, loc, scale, fit, line, ax, **plotkwargs)
-        583     """
-        584     probplot = ProbPlot(data, dist=dist, distargs=distargs,
-    --> 585                          fit=fit, a=a, loc=loc, scale=scale)
-        586     fig = probplot.qqplot(ax=ax, line=line, **plotkwargs)
-        587     return fig
-
-
-    ~/anaconda3/lib/python3.7/site-packages/statsmodels/graphics/gofplots.py in __init__(self, data, dist, fit, distargs, a, loc, scale)
-        167         self.data = data
-        168         self.a = a
-    --> 169         self.nobs = data.shape[0]
-        170         self.distargs = distargs
-        171         self.fit = fit
-
-
-    AttributeError: 'NoneType' object has no attribute 'shape'
-
-
-Those qqplots don't look so good in the upper right corner.
+Those qqplots don't look so good in the upper right corner. To pass a visual test, the qq should be a straight line.
 
 The [Jarque-Bera](https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test) test is performed automatically as part of the model summary output, labeled **Jarque-Bera (JB)** and **Prob(JB)**.
 
@@ -534,14 +300,9 @@ What does the JB score output indicate. Does it support the qq-plot?
 # Your answer here
 ```
 
-
-```python
-# Your answer here
-```
-
 #### 3. Homoscadasticity
 
-Linear regression assumes that the variance of the dependent variable is homogeneous across different value of the independent variable(s).  We can visualize this by looking at the predicted life expectancy vs. the residuals.
+Linear regression assumes that the variance of the dependent variable is homogeneous across different values of the independent variable(s).  We can visualize this by looking at the predicted life expectancy vs. the residuals.
 
 
 
@@ -549,10 +310,13 @@ Linear regression assumes that the variance of the dependent variable is homogen
 ```python
 # Use the predict() method now available to be called from the fsm variable to store the predictions
 y_hat = None
+```
 
+
+```python
 # plot y_hat against the residuals (stored in fsm_resids) in a scatter plot
 
-
+# Your code here
 ```
 
 Interepret the result. Do you see any patterns that suggest that the residuals exhibit heteroscedasticity?
@@ -567,10 +331,6 @@ lm, lm_p_value, fvalue, f_p_value = het_breuschpagan(fsm_resids, fsm_df[["school
 print("Lagrange Multiplier p-value:", lm_p_value)
 print("F-statistic p-value:", f_p_value)
 ```
-
-    Lagrange Multiplier p-value: nan
-    F-statistic p-value: 2.2825932549972298e-67
-
 
 The null hypothesis is homoscedasticity, alternative hypothesis is heteroscedasticity.  
 What does the p-value returned above indicate?
@@ -589,17 +349,30 @@ from sklearn.linear_model import LinearRegression
 # fit an sklearn model
 #instantiate a linear regression object 
 lr = None
+```
 
+
+```python
 # split the data into target and features
 y = None
 X = None
+```
 
+
+```python
 # Call .fit from the linear regression object, and feed X and y in as parameters
+# Your code here
+```
 
 
-# lr has a method called score.  Again, feed in X and y, and read the output. Save it in the variable score.  What is that number?  Compare it to statsmodels. 
+```python
+# lr has a method called score.  Again, feed in X and y, and read the output. Save it in the variable score. 
+# What is that number?  Compare it to statsmodels. 
 score = None
+```
 
+
+```python
 # lr also has attributes coef_ and intercept_. Save and compare to statsmodels
 beta = None
 intercept = None
@@ -626,192 +399,6 @@ negatively_correlated_df = df[negatively_correlated_cols]
 sns.pairplot(negatively_correlated_df);
 ```
 
-
-![png](index_files/index_50_0.png)
-
-
-
-```python
-df.head()
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>life_expectancy</th>
-      <th>country</th>
-      <th>year</th>
-      <th>status</th>
-      <th>adult_mortality</th>
-      <th>infant_deaths</th>
-      <th>alcohol</th>
-      <th>percentage_expenditure</th>
-      <th>hepatitis_b</th>
-      <th>measles</th>
-      <th>bmi</th>
-      <th>under-five_deaths</th>
-      <th>polio</th>
-      <th>total_expenditure</th>
-      <th>diphtheria</th>
-      <th>hiv/aids</th>
-      <th>gdp</th>
-      <th>population</th>
-      <th>thinness__1-19_years</th>
-      <th>thinness_5-9_years</th>
-      <th>income_composition_of_resources</th>
-      <th>schooling</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>65.0</td>
-      <td>Afghanistan</td>
-      <td>2015</td>
-      <td>Developing</td>
-      <td>263.0</td>
-      <td>62</td>
-      <td>0.01</td>
-      <td>71.279624</td>
-      <td>65.0</td>
-      <td>1154</td>
-      <td>19.1</td>
-      <td>83</td>
-      <td>6.0</td>
-      <td>8.16</td>
-      <td>65.0</td>
-      <td>0.1</td>
-      <td>584.259210</td>
-      <td>33736494.0</td>
-      <td>17.2</td>
-      <td>17.3</td>
-      <td>0.479</td>
-      <td>10.1</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>59.9</td>
-      <td>Afghanistan</td>
-      <td>2014</td>
-      <td>Developing</td>
-      <td>271.0</td>
-      <td>64</td>
-      <td>0.01</td>
-      <td>73.523582</td>
-      <td>62.0</td>
-      <td>492</td>
-      <td>18.6</td>
-      <td>86</td>
-      <td>58.0</td>
-      <td>8.18</td>
-      <td>62.0</td>
-      <td>0.1</td>
-      <td>612.696514</td>
-      <td>327582.0</td>
-      <td>17.5</td>
-      <td>17.5</td>
-      <td>0.476</td>
-      <td>10.0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>59.9</td>
-      <td>Afghanistan</td>
-      <td>2013</td>
-      <td>Developing</td>
-      <td>268.0</td>
-      <td>66</td>
-      <td>0.01</td>
-      <td>73.219243</td>
-      <td>64.0</td>
-      <td>430</td>
-      <td>18.1</td>
-      <td>89</td>
-      <td>62.0</td>
-      <td>8.13</td>
-      <td>64.0</td>
-      <td>0.1</td>
-      <td>631.744976</td>
-      <td>31731688.0</td>
-      <td>17.7</td>
-      <td>17.7</td>
-      <td>0.470</td>
-      <td>9.9</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>59.5</td>
-      <td>Afghanistan</td>
-      <td>2012</td>
-      <td>Developing</td>
-      <td>272.0</td>
-      <td>69</td>
-      <td>0.01</td>
-      <td>78.184215</td>
-      <td>67.0</td>
-      <td>2787</td>
-      <td>17.6</td>
-      <td>93</td>
-      <td>67.0</td>
-      <td>8.52</td>
-      <td>67.0</td>
-      <td>0.1</td>
-      <td>669.959000</td>
-      <td>3696958.0</td>
-      <td>17.9</td>
-      <td>18.0</td>
-      <td>0.463</td>
-      <td>9.8</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>59.2</td>
-      <td>Afghanistan</td>
-      <td>2011</td>
-      <td>Developing</td>
-      <td>275.0</td>
-      <td>71</td>
-      <td>0.01</td>
-      <td>7.097109</td>
-      <td>68.0</td>
-      <td>3013</td>
-      <td>17.2</td>
-      <td>97</td>
-      <td>68.0</td>
-      <td>7.87</td>
-      <td>68.0</td>
-      <td>0.1</td>
-      <td>63.537231</td>
-      <td>2978599.0</td>
-      <td>18.2</td>
-      <td>18.2</td>
-      <td>0.454</td>
-      <td>9.5</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
 `adult_mortality` seems most like a linear relationship.  Also, the two thinness metrics seem to be providing very similar information, so we almost certainly should not include both
 
 Let's proceed with adult mortality.
@@ -820,40 +407,41 @@ Let's proceed with adult mortality.
 ```python
 # Create another dataframe containing our three features of interest
 model_2 = None
+```
 
+
+```python
 # Drop na's across all columns
+```
 
 
+```python
 # save the R-like formula into the variable
 formula = None
+```
 
+
+```python
 # train the model like we did above
 model_2
+```
 
+
+```python
 # print out the summary table
-
+# Your code here
 ```
 
 ### Did the r_2 improve? 
 Your answer here
 
-
-```python
-Now check the assumptions like we did above.
-```
-
-
-      File "<ipython-input-377-533dd3775036>", line 1
-        Now check the assumptions like we did above.
-                ^
-    SyntaxError: invalid syntax
-
-
+### Now check the assumptions like we did above.
 
 
 ```python
 ## Linearity
 
+# Your answer here
 
 ```
 
@@ -861,6 +449,7 @@ Now check the assumptions like we did above.
 ```python
 ## Normality
 
+# Your answer here
 
 ```
 
@@ -868,52 +457,9 @@ Now check the assumptions like we did above.
 ```python
 ## Homoscadasticity
 
-
+# Your answer here
 
 ```
-
-
-```python
-y_hat = model_2.predict()
-model_2_resids = model_2.resid
-
-fig4, ax4 = plt.subplots()
-ax4.set(xlabel="Predicted Life Expectancy",
-        ylabel="Residuals (Actual - Predicted Life Expectancy)")
-ax4.scatter(x=y_hat, y=model_2_resids, color="blue", alpha=0.2)
-```
-
-
-
-
-    <matplotlib.collections.PathCollection at 0x1a2f0c5e10>
-
-
-
-
-![png](index_files/index_59_1.png)
-
-
-
-```python
-lm, lm_p_value, fvalue, f_p_value = het_breuschpagan(y-y_hat, model_2_df[["schooling", "adult_mortality"]])
-print("Lagrange Multiplier p-value:", lm_p_value)
-print("F-statistic p-value:", f_p_value)
-
-'''Both visually and numerically, we can see some improvement. 
-But we are still violating this assumption to a statistically significant degree.'''
-```
-
-    Lagrange Multiplier p-value: 3.8946545111368395e-47
-    F-statistic p-value: 1.2521305604484036e-47
-
-
-
-
-
-    'Both visually and numerically, we can see some improvement. \nBut we are still violating this assumption to a statistically significant degree.'
-
-
 
 ## Independence
 
@@ -934,48 +480,6 @@ vif_df["feature"] = ["schooling", "adult_mortality"]
 vif_df
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>VIF</th>
-      <th>feature</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1.937556</td>
-      <td>schooling</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1.937556</td>
-      <td>adult_mortality</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
 A "rule of thumb" for VIF is that 5 is too high.  Given the output above, it's reasonable to say that we are not violating the independence assumption, despite the high condition number.
 
 ### 3. Iterate: Build a better model - Add a categorical feature
@@ -987,11 +491,30 @@ In this dataset, we have a lot of numeric values (everything in that correlation
 
 
 ```python
+# We have created a dataframe with the "life_expectancy", "schooling", "adult_mortality", "status"] columns
+model_3_df = df[["life_expectancy", "schooling", "adult_mortality", "status"]].copy()
+
+# Drop NA's
+
+# your code here
+```
+
+
+```python
+# Inspect value counts  of the status column
+
+# Your code here
+
+```
+
+
+```python
 # Check out what Seaborn's catplot does
 # https://seaborn.pydata.org/generated/seaborn.catplot.html
 
 # Plot status vs life expectancy.  Choose a kind of plot to pass into the kind parameter
 
+# Your code here
 ```
 
 It looks like there is a difference between the two groups that might be useful to include
@@ -1004,10 +527,12 @@ from sklearn.preprocessing import LabelEncoder
 
 # instantiate and instance of LabelEncoder
 label_encoder = None
+```
 
+
+```python
 # Pass the "status" column of the model_3_df to the fit_transform() method of the Label Encoder
 status_labels = None
-
 ```
 
 
@@ -1022,34 +547,20 @@ np.unique(status_labels, return_counts=True)
 label_encoder.classes_
 ```
 
-
-
-
-    array(['Developed', 'Developing'], dtype=object)
-
-
-
 This is telling us that "Developed" is encoded as 0 and "Developing" is encoded as 1.  This means that "Developed" is assumed at the intercept.
 
 
 ```python
 # Add the status labels array to the model_df as a column 
 model_3_df["status_encoded"] = None
-
-# Drop the status column
 ```
 
 
 ```python
-"+".join(model_3_df.iloc[:,1:].columns)
+# Drop the status column
+
+# your code here
 ```
-
-
-
-
-    'schooling+adult_mortality+status_encoded'
-
-
 
 
 ```python
@@ -1057,89 +568,28 @@ model_3_df["status_encoded"] = None
 
 # assign the new formula
 
-formula="life_expectancy~" + "+".join(model_3_df.iloc[:,1:].columns)
+formula=None
+```
 
+
+```python
 # fit the new model
-model_3 = ols(formula=formula, data=model_3_df).fit()
+model_3 = None
+```
 
+
+```python
 # print the summary
 model_3.summary()
 ```
 
-
-
-
-<table class="simpletable">
-<caption>OLS Regression Results</caption>
-<tr>
-  <th>Dep. Variable:</th>     <td>life_expectancy</td> <th>  R-squared:         </th> <td>   0.718</td> 
-</tr>
-<tr>
-  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.718</td> 
-</tr>
-<tr>
-  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   2350.</td> 
-</tr>
-<tr>
-  <th>Date:</th>             <td>Wed, 10 Jun 2020</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
-</tr>
-<tr>
-  <th>Time:</th>                 <td>20:44:17</td>     <th>  Log-Likelihood:    </th> <td> -8364.0</td> 
-</tr>
-<tr>
-  <th>No. Observations:</th>      <td>  2768</td>      <th>  AIC:               </th> <td>1.674e+04</td>
-</tr>
-<tr>
-  <th>Df Residuals:</th>          <td>  2764</td>      <th>  BIC:               </th> <td>1.676e+04</td>
-</tr>
-<tr>
-  <th>Df Model:</th>              <td>     3</td>      <th>                     </th>     <td> </td>    
-</tr>
-<tr>
-  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>    
-</tr>
-</table>
-<table class="simpletable">
-<tr>
-         <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th>       <td>   58.9976</td> <td>    0.634</td> <td>   93.014</td> <td> 0.000</td> <td>   57.754</td> <td>   60.241</td>
-</tr>
-<tr>
-  <th>schooling</th>       <td>    1.4447</td> <td>    0.035</td> <td>   40.772</td> <td> 0.000</td> <td>    1.375</td> <td>    1.514</td>
-</tr>
-<tr>
-  <th>adult_mortality</th> <td>   -0.0324</td> <td>    0.001</td> <td>  -37.395</td> <td> 0.000</td> <td>   -0.034</td> <td>   -0.031</td>
-</tr>
-<tr>
-  <th>status_encoded</th>  <td>   -2.0474</td> <td>    0.296</td> <td>   -6.910</td> <td> 0.000</td> <td>   -2.628</td> <td>   -1.466</td>
-</tr>
-</table>
-<table class="simpletable">
-<tr>
-  <th>Omnibus:</th>       <td>570.672</td> <th>  Durbin-Watson:     </th> <td>   0.678</td>
-</tr>
-<tr>
-  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>2798.757</td>
-</tr>
-<tr>
-  <th>Skew:</th>          <td>-0.899</td>  <th>  Prob(JB):          </th> <td>    0.00</td>
-</tr>
-<tr>
-  <th>Kurtosis:</th>      <td> 7.586</td>  <th>  Cond. No.          </th> <td>1.45e+03</td>
-</tr>
-</table><br/><br/>Warnings:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.<br/>[2] The condition number is large, 1.45e+03. This might indicate that there are<br/>strong multicollinearity or other numerical problems.
-
-
-
 ### Third Model Evaluation
- Your answer here
 
+Did the R_squared improve?
 
-```python
+Your answer here
+
 # Let's look at the model assumptions again
-```
 
 #### Linearity
 
@@ -1150,10 +600,6 @@ print("Rainbow statistic:", rainbow_statistic)
 print("Rainbow p-value:", rainbow_p_value)
 ```
 
-    Rainbow statistic: 1.0769559317010546
-    Rainbow p-value: 0.08416346182745871
-
-
 
 ```python
 # Did linearity improve
@@ -1163,7 +609,7 @@ print("Rainbow p-value:", rainbow_p_value)
 
 ```python
 #_SOLUTION__
-Another small improvement
+'Another small improvement'
 ```
 
 #### Normality
@@ -1205,53 +651,6 @@ vif_df["feature"] = ["schooling", "adult_mortality", "status_encoded"]
 vif_df
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>VIF</th>
-      <th>feature</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>3.120074</td>
-      <td>schooling</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>2.838221</td>
-      <td>adult_mortality</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>4.518962</td>
-      <td>status_encoded</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
 What does the above output tell you?
 
 Your answer here
@@ -1265,7 +664,7 @@ The final model for this lesson had three input features: Schooling, Adult_Morta
 
 We are able to address the following questions from above:
 
-1. Does various predicting factors which has been chosen initially really affect the Life expectancy? What are the predicting variables actually affecting the life expectancy?
+1. Do various predicting factors which have been chosen initially really affect the Life expectancy? What are the predicting variables actually affecting the life expectancy?
 
 With only 3 features we are able to explain about 71% of the variance in life expectancy. This indicates that these factors truly are explanatory. More analysis is required to understand how much additional explanatory power would be provided by incorporating additional features into the model.
 
@@ -1277,121 +676,14 @@ So far we have only investigated adult mortality. The adult mortality rate ("pro
 
 In our latest model, we find that each additional year of average schooling is associated with 1.4 years of added life expectancy. However it is challenging to interpret whether it is schooling that is actually having the impact. Schooling is highly correlated with Income_Composition_of_Resources ("Human Development Index in terms of income composition of resources") so it is very possible that schooling is the result of some underlying factor that also impacts life expectancy, rather than schooling impacting life expectancy directly.
 
-### 4. Further exercises
+### 4. Appendix
 
 
-```python
-### Remove outliers
-
-# Run a boxplot on the model_3_df
-model_3_df.boxplot()
-```
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x1a2f15fcc0>
-
-
-
-
-![png](index_files/index_91_1.png)
-
-
-
-```python
-# There are a a significant amount of outliers in adult mortality giving the distribution a heavy right skew
-```
-
-
-```python
-model_3_df_no_am_fliers = model_3_df[np.abs(stats.zscore(model_3_df['adult_mortality'])<3)]
-
-# Fit the 3rd model
-# assign the new formula
-
-formula="life_expectancy~" + "+".join(model_3_df_no_am_fliers.iloc[:,1:].columns)
-
-# fit the new model
-model_3_no_am_fliers = ols(formula=formula, data=model_3_df_no_am_fliers).fit()
-
-# print the summary
-model_3_no_am_fliers.summary()
-```
-
-
-
-
-<table class="simpletable">
-<caption>OLS Regression Results</caption>
-<tr>
-  <th>Dep. Variable:</th>     <td>life_expectancy</td> <th>  R-squared:         </th> <td>   0.697</td> 
-</tr>
-<tr>
-  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.696</td> 
-</tr>
-<tr>
-  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   2084.</td> 
-</tr>
-<tr>
-  <th>Date:</th>             <td>Wed, 10 Jun 2020</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
-</tr>
-<tr>
-  <th>Time:</th>                 <td>21:32:57</td>     <th>  Log-Likelihood:    </th> <td> -8221.8</td> 
-</tr>
-<tr>
-  <th>No. Observations:</th>      <td>  2726</td>      <th>  AIC:               </th> <td>1.645e+04</td>
-</tr>
-<tr>
-  <th>Df Residuals:</th>          <td>  2722</td>      <th>  BIC:               </th> <td>1.648e+04</td>
-</tr>
-<tr>
-  <th>Df Model:</th>              <td>     3</td>      <th>                     </th>     <td> </td>    
-</tr>
-<tr>
-  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>    
-</tr>
-</table>
-<table class="simpletable">
-<tr>
-         <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th>       <td>   58.0113</td> <td>    0.644</td> <td>   90.122</td> <td> 0.000</td> <td>   56.749</td> <td>   59.273</td>
-</tr>
-<tr>
-  <th>schooling</th>       <td>    1.4876</td> <td>    0.036</td> <td>   41.661</td> <td> 0.000</td> <td>    1.418</td> <td>    1.558</td>
-</tr>
-<tr>
-  <th>adult_mortality</th> <td>   -0.0286</td> <td>    0.001</td> <td>  -29.073</td> <td> 0.000</td> <td>   -0.031</td> <td>   -0.027</td>
-</tr>
-<tr>
-  <th>status_encoded</th>  <td>   -2.0926</td> <td>    0.295</td> <td>   -7.098</td> <td> 0.000</td> <td>   -2.671</td> <td>   -1.514</td>
-</tr>
-</table>
-<table class="simpletable">
-<tr>
-  <th>Omnibus:</th>       <td>507.372</td> <th>  Durbin-Watson:     </th> <td>   0.597</td>
-</tr>
-<tr>
-  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>2548.934</td>
-</tr>
-<tr>
-  <th>Skew:</th>          <td>-0.796</td>  <th>  Prob(JB):          </th> <td>    0.00</td>
-</tr>
-<tr>
-  <th>Kurtosis:</th>      <td> 7.462</td>  <th>  Cond. No.          </th> <td>1.36e+03</td>
-</tr>
-</table><br/><br/>Warnings:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.<br/>[2] The condition number is large, 1.36e+03. This might indicate that there are<br/>strong multicollinearity or other numerical problems.
-
-
-
-# Appendix
 Things we have not done in this lesson, but that you should consider in your project:  
 
-More robust cleaning (possible imputation of missing values, principled exclusion of some data)  
-Feature scaling  
-Nearest-neighbors approach (requires more complex feature engineering)  
-Pulling information from external resources  
-Removing independent variables if you determine that they are causing too high of multicollinearity  
-Setting up functions so the code is not so repetitive  
+- More robust cleaning (possible imputation of missing values, principled exclusion of some data)  
+- Feature scaling  
+- Nearest-neighbors approach (requires more complex feature engineering)  
+- Pulling information from external resources  
+- Removing independent variables if you determine that they are causing too high of multicollinearity  
+- Setting up functions so the code is not so repetitive  

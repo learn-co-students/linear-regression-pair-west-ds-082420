@@ -1,7 +1,7 @@
 
-For this exercise we will work through the different steps of a linear regression workflow.  We will:
+For this exercise we will work through the different steps of a linear regression workflow. The notebook will walk you through building a first simple model and improving upon that model by stepwise iteration.
 
-### 1. FSM
+### 1. First Simple Model
 - Load in the dataset: inspect the overall shape, duplicate entries, and na's.
 - Identify the continuous target variable
 - Perform Initial EDA: correlation plots
@@ -61,35 +61,6 @@ df.isna().sum()
 
 ```
 
-
-
-
-    Country                              0
-    Year                                 0
-    Status                               0
-    Life expectancy                     10
-    Adult Mortality                     10
-    infant deaths                        0
-    Alcohol                            194
-    percentage expenditure               0
-    Hepatitis B                        553
-    Measles                              0
-     BMI                                34
-    under-five deaths                    0
-    Polio                               19
-    Total expenditure                  226
-    Diphtheria                          19
-     HIV/AIDS                            0
-    GDP                                448
-    Population                         652
-     thinness  1-19 years               34
-     thinness 5-9 years                 34
-    Income composition of resources    167
-    Schooling                          163
-    dtype: int64
-
-
-
 ### What does a row in the dataframe represent?
 
 
@@ -99,13 +70,6 @@ df.isna().sum()
 Each row represents a *year* of a *country's* health data.
 """
 ```
-
-
-
-
-    "\nEach row represents a *year* of a *country's* health data.\n"
-
-
 
 ### Identify the continous target variable
 
@@ -117,25 +81,7 @@ df['Life expectancy ']
 
 ```
 
-
-
-
-    0       65.0
-    1       59.9
-    2       59.9
-    3       59.5
-    4       59.2
-            ... 
-    2933    44.3
-    2934    44.5
-    2935    44.8
-    2936    45.3
-    2937    46.0
-    Name: Life expectancy , Length: 2938, dtype: float64
-
-
-
-If you had problems isolating that variable, don't worry.  That is on purpose! 
+If you had problems isolating that variable, don't worry.  That is expected! 
 There can be odd, burdensome inconsistencies in naming of data.
 Let's use our Python skills to wipe out the naming inconsistencies.
 
@@ -184,8 +130,13 @@ ax[0].set_title('Distribution of Target Variable: Life Expectancy');
 ```
 
 
-![png](index_files/index_13_0.png)
-
+```python
+print(f'''Generally normal with a left skew.  
+            Mean of {round(df.life_expectancy.mean(),2)}
+             Median of {round(df.life_expectancy.median(),2)}
+             Skew: {round(stats.skew(df.life_expectancy.dropna()), 2)}
+             ''')
+```
 
 ## Perform Initial EDA
 
@@ -205,30 +156,12 @@ sns.heatmap(df.corr(), mask=mask)
 ```
 
 
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x1a2d158c18>
-
-
-
-
-![png](index_files/index_15_1.png)
-
-
-
 ```python
 # From the heatmap, which features have high correlation? 
 "Schooling, income_composition_of_resources, BMI"
 ```
 
-
-
-
-    'Schooling, income_'
-
-
-
-Use seaborn's pairplot function on the three features above plus life_expectancy.  
+### Use seaborn's pairplot function on the three features above plus life_expectancy.  
 Note: we would usually start right off by using a pairplot, but because we have so many features, the pairplot would be unwieldy.
 
 
@@ -239,20 +172,9 @@ high_correlation_df = df[['life_expectancy', 'schooling',
 sns.pairplot(high_correlation_df)
 ```
 
-
-
-
-    <seaborn.axisgrid.PairGrid at 0x1a2d1727b8>
-
-
-
-
-![png](index_files/index_18_1.png)
-
-
 Judging from the top row of the pairplot, one feature's correlation to the target is a bit fuzzier than the rest. 
 Inspecting other cells of the pairplot, the other two features show covariance. 
-Given those two insights, choose one feature to build the First Simple Model with.
+Given those two insights, choose one feature to build the First Simple Model with. (Our FSM will be simple the target and one predictor).
 Consider also whether choosing one of the positively correlated features above the others would help answer any of the question listed at the beginning of the notebook.
 
 
@@ -268,13 +190,6 @@ so let's only include one of them.
 """
 
 ```
-
-
-
-
-    "\nIt looks like the correlation with BMI is a little fuzzier than the others, \nso let's exclude it for now.  \n`Schooling` and `Income_Composition_of_Resources` are highly correlated with both life expectancy and each other, \nso let's only include one of them. \n`Schooling` seems like a good choice because it would allow us to answer Question 5.\n"
-
-
 
 ## FSM with Statsmodels
 
@@ -311,26 +226,18 @@ print(params)
               
 ```
 
-    Rsquared of FSM: 0.565467096558071
-    ----------
-    Beta values of FSM:
-    Intercept    44.108889
-    schooling     2.103453
-    dtype: float64
-
-
 Interpret the result of the FSM.  What does the R Squared tell you? Remember the formula for:
 
 $\Large R^2 = 1 - \frac{SSE}{SST}$
 
 Also, interepret the coefficients.  If we increase the value of our independent variable by 1, what does it mean for our predicted value?
 
-What is will our model predict the value of Life Expectancy to be for a country with 0 years of school on average?
+What will our model predict the value of Life Expectancy to be for a country with 0 years of school on average?
 
 
 ```python
 '''
-Not too bad.  We are only explaining about 57% of the variance in life expectancy, but we only have one feature so far and it's statistically significant at an alpha of 0.05.
+Our R_2 is not too bad. We are only explaining about 57% of the variance in life expectancy, but we only have one feature so far and it's statistically significant at an alpha of 0.05.
 
 We could stop right now and say that according to our model:
 
@@ -340,24 +247,17 @@ We could stop right now and say that according to our model:
 '''
 ```
 
-
-
-
-    "\nNot too bad.  We are only explaining about 57% of the variance in life expectancy, but we only have one feature so far and it's statistically significant at an alpha of 0.05.\n\nWe could stop right now and say that according to our model:\n\n - A country with zero years of schooling on average is expected to have a life expectancy of 44.1 years\n - For each additional average year of schooling, we expect life expectancy to increase by 2.1 years\n \n"
-
-
-
 # Check the assumptions of Linear Regression
 
 #### 1. Linearity
 
-Linear regression assumes that the input variable linearly predicts the output variable.  We already qualitatively checked that with a scatter plot.  But I also think it's a good idea to use a statistical test.  This one is the [Rainbow test](https://www.tandfonline.com/doi/abs/10.1080/03610928208828423) which is available from the [diagnostic submodule of StatsModels](https://www.statsmodels.org/stable/generated/statsmodels.stats.diagnostic.linear_rainbow.html#statsmodels.stats.diagnostic.linear_rainbow)
+Linear regression assumes that the input variable linearly predicts the output variable.  We already qualitatively checked that with a scatter plot.  But it's also a good idea to use a statistical test.  This one is the [Rainbow test](https://www.tandfonline.com/doi/abs/10.1080/03610928208828423) which is available from the [diagnostic submodule of StatsModels](https://www.statsmodels.org/stable/generated/statsmodels.stats.diagnostic.linear_rainbow.html#statsmodels.stats.diagnostic.linear_rainbow)
 
 The null hypothesis is that the model is linearly predicted by the features, alternative hypothesis is that it is not.  Thus returning a low p-value means that the current model violates the linearity assumption.
 
 #### 2. Normality
 
-Linear regression assumes that the residuals are normally distributed.  It is possible to check this qualitatively with a Q-Q plot.  The fit model object has an attribute called resid, which is an array of the difference between predicted and real values.  Store the residuals in the variable below, show the qq plot, and interepret. You are looking for the theoretical quantiles and the sample quantiles to line up.
+Linear regression assumes that the residuals are normally distributed.  It is possible to check this qualitatively with a Q-Q plot.  The fit model object has an attribute called resid, which is an array of the difference between predicted and true values.  Store the residuals in the variable below, show the qq plot, and interepret. You are looking for the theoretical quantiles and the sample quantiles to line up.
 
 
 ```python
@@ -369,18 +269,7 @@ import statsmodels.api as sm
 sm.qqplot(fsm_resids)
 ```
 
-
-
-
-![png](index_files/index_30_0.png)
-
-
-
-
-![png](index_files/index_30_1.png)
-
-
-Those qqplots don't look so good in the upper right corner.
+Those qqplots don't look so good in the upper right corner. To pass a visual test, the qq should be a straight line.
 
 The [Jarque-Bera](https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test) test is performed automatically as part of the model summary output, labeled **Jarque-Bera (JB)** and **Prob(JB)**.
 
@@ -393,16 +282,9 @@ What does the JB score output indicate. Does it support the qq-plot?
 That supports the qq visual with the crooked tail.'''
 ```
 
-
-
-
-    'The JB score has a low p-value means that the current model violates the normality assumption. \nThat supports the qq visual with the crooked tail.'
-
-
-
 #### 3. Homoscadasticity
 
-Linear regression assumes that the variance of the dependent variable is homogeneous across different value of the independent variable(s).  We can visualize this by looking at the predicted life expectancy vs. the residuals.
+Linear regression assumes that the variance of the dependent variable is homogeneous across different values of the independent variable(s).  We can visualize this by looking at the predicted life expectancy vs. the residuals.
 
 
 
@@ -420,17 +302,6 @@ ax.scatter(y_hat, fsm_resids)
 ```
 
 
-
-
-    <matplotlib.collections.PathCollection at 0x1a2fa33908>
-
-
-
-
-![png](index_files/index_36_1.png)
-
-
-
 ```python
 '''
 Just visually inspecting this, it seems like our model over-predicts life expectancy 
@@ -440,13 +311,6 @@ Maybe there was something wrong with recording those values,
 or maybe there is something we can feature engineer once we have more independent variables.
 '''
 ```
-
-
-
-
-    "\nJust visually inspecting this, it seems like our model over-predicts life expectancy \nbetween 60 and 70 years old in a way that doesn't happen for other age groups.  \nPlus we have some weird-looking data in the lower end that we might want to inspect.  \nMaybe there was something wrong with recording those values, \nor maybe there is something we can feature engineer once we have more independent variables.\n"
-
-
 
 Let's also run a statistical test.  The [Breusch-Pagan test](https://en.wikipedia.org/wiki/Breusch%E2%80%93Pagan_test) is available from the [diagnostic submodule of StatsModels](https://www.statsmodels.org/stable/generated/statsmodels.stats.diagnostic.het_breuschpagan.html#statsmodels.stats.diagnostic.het_breuschpagan)
 
@@ -459,13 +323,6 @@ What does the p-value returned above indicate?
 model violates the homoscedasticity assumption'''
 
 ```
-
-
-
-
-    'Thus returning a low p-value means that the current \nmodel violates the homoscedasticity assumption'
-
-
 
 #### 4. Independence
 
@@ -532,70 +389,6 @@ model_2.summary()
 
 ```
 
-
-
-
-<table class="simpletable">
-<caption>OLS Regression Results</caption>
-<tr>
-  <th>Dep. Variable:</th>     <td>life_expectancy</td> <th>  R-squared:         </th> <td>   0.714</td> 
-</tr>
-<tr>
-  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.713</td> 
-</tr>
-<tr>
-  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   3443.</td> 
-</tr>
-<tr>
-  <th>Date:</th>             <td>Wed, 10 Jun 2020</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
-</tr>
-<tr>
-  <th>Time:</th>                 <td>21:27:54</td>     <th>  Log-Likelihood:    </th> <td> -8387.7</td> 
-</tr>
-<tr>
-  <th>No. Observations:</th>      <td>  2768</td>      <th>  AIC:               </th> <td>1.678e+04</td>
-</tr>
-<tr>
-  <th>Df Residuals:</th>          <td>  2765</td>      <th>  BIC:               </th> <td>1.680e+04</td>
-</tr>
-<tr>
-  <th>Df Model:</th>              <td>     2</td>      <th>                     </th>     <td> </td>    
-</tr>
-<tr>
-  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>    
-</tr>
-</table>
-<table class="simpletable">
-<tr>
-         <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th>       <td>   56.0636</td> <td>    0.475</td> <td>  117.981</td> <td> 0.000</td> <td>   55.132</td> <td>   56.995</td>
-</tr>
-<tr>
-  <th>schooling</th>       <td>    1.5541</td> <td>    0.032</td> <td>   48.616</td> <td> 0.000</td> <td>    1.491</td> <td>    1.617</td>
-</tr>
-<tr>
-  <th>adult_mortality</th> <td>   -0.0329</td> <td>    0.001</td> <td>  -37.803</td> <td> 0.000</td> <td>   -0.035</td> <td>   -0.031</td>
-</tr>
-</table>
-<table class="simpletable">
-<tr>
-  <th>Omnibus:</th>       <td>537.142</td> <th>  Durbin-Watson:     </th> <td>   0.685</td>
-</tr>
-<tr>
-  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>2901.045</td>
-</tr>
-<tr>
-  <th>Skew:</th>          <td>-0.813</td>  <th>  Prob(JB):          </th> <td>    0.00</td>
-</tr>
-<tr>
-  <th>Kurtosis:</th>      <td> 7.745</td>  <th>  Cond. No.          </th> <td>1.02e+03</td>
-</tr>
-</table><br/><br/>Warnings:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.<br/>[2] The condition number is large, 1.02e+03. This might indicate that there are<br/>strong multicollinearity or other numerical problems.
-
-
-
 ### Did the r_2 improve? 
 Your answer here
 
@@ -604,12 +397,7 @@ Your answer here
 'Adding another feature improved the r-squared from 0.565 to 0.714'
 ```
 
-
-
-
-    'Adding another feature improved the r-squared from 0.565 to 0.714'
-
-
+### Now check the assumptions like we did above.
 
 
 ```python
@@ -620,29 +408,31 @@ print("Rainbow p-value:", rainbow_p_value)
 'Assuming an alpha of 0.05, we are no longer violating the linearity assumption (just barely)'
 ```
 
-    Rainbow statistic: 1.0919639546889197
-    Rainbow p-value: 0.05102555171520744
-
-
-
-
-
-    'Assuming an alpha of 0.05, we are no longer violating the linearity assumption (just barely)'
-
-
-
 
 ```python
-'The Jarque-Bera (JB) output has gotten worse. We are still violating the normality assumption.''
+'''The Jarque-Bera (JB) output has gotten worse. We are still violating the normality assumption.'''
 ```
 
 
-      File "<ipython-input-381-b763d8b6629b>", line 2
-        'The Jarque-Bera (JB) output has gotten worse. We are still violating the normality assumption.''
-                                                                                                         ^
-    SyntaxError: EOL while scanning string literal
+```python
+y_hat = model_2.predict()
+model_2_resids = model_2.resid
+
+fig4, ax4 = plt.subplots()
+ax4.set(xlabel="Predicted Life Expectancy",
+        ylabel="Residuals (Actual - Predicted Life Expectancy)")
+ax4.scatter(x=y_hat, y=model_2_resids, color="blue", alpha=0.2)
+```
 
 
+```python
+lm, lm_p_value, fvalue, f_p_value = het_breuschpagan(y-y_hat, model_2_df[["schooling", "adult_mortality"]])
+print("Lagrange Multiplier p-value:", lm_p_value)
+print("F-statistic p-value:", f_p_value)
+
+'''Both visually and numerically, we can see some improvement. 
+But we are still violating this assumption to a statistically significant degree.'''
+```
 
 ## Independence
 
@@ -679,30 +469,10 @@ model_3_df["status"].value_counts()
 ```
 
 
-
-
-    Developing    2304
-    Developed      464
-    Name: status, dtype: int64
-
-
-
-
 ```python
 # Plot status vs life expectancy.  Choose a kind of plot to pass into the kind parameter
 sns.catplot(x="status", y="life_expectancy", data=model_3_df, kind='box')
 ```
-
-
-
-
-    <seaborn.axisgrid.FacetGrid at 0x1a2e2887f0>
-
-
-
-
-![png](index_files/index_57_1.png)
-
 
 It looks like there is a difference between the two groups that might be useful to include
 
@@ -729,14 +499,34 @@ model_3_df["status_encoded"] = status_labels
 model_3_df.drop("status", axis=1, inplace=True)
 ```
 
+
+```python
+# Fit the 3rd model
+
+# assign the new formula
+
+formula="life_expectancy~" + "+".join(model_3_df.iloc[:,1:].columns)
+
+# fit the new model
+model_3 = ols(formula=formula, data=model_3_df).fit()
+
+# print the summary
+model_3.summary()
+```
+
 ### Third Model Evaluation
- Your answer here
+
+Did the R_squared improve?
+
+Your answer here
 
 
 ```python
 # Did the R_squared improve
 "Adding another feature improved the r-squared a tiny bit from 0.714 to 0.718"
 ```
+
+# Let's look at the model assumptions again
 
 #### Linearity
 
@@ -757,13 +547,6 @@ But we are still violating the normality assumption.
 
 ```
 
-
-
-
-    '\nThe **Jarque-Bera (JB)** output has gotten slightly better.  \nBut we are still violating the normality assumption.\n'
-
-
-
 #### Homoscadasticity
 
 Did our homoscadasticity improve?
@@ -781,38 +564,16 @@ ax.scatter(y_hat, model_3_resids)
 ```
 
 
-
-
-    <matplotlib.collections.PathCollection at 0x1a308ee1d0>
-
-
-
-
-![png](index_files/index_68_1.png)
-
-
-
 ```python
 lm, lm_p_value, fvalue, f_p_value = het_breuschpagan(y-y_hat, model_3_df[["schooling", "adult_mortality", "status_encoded"]])
 print("Lagrange Multiplier p-value:", lm_p_value)
 print("F-statistic p-value:", f_p_value)
 ```
 
-    Lagrange Multiplier p-value: 6.82832277846069e-89
-    F-statistic p-value: 9.27409337812992e-95
-
-
 
 ```python
 '''This metric got worse, although the plot looks fairly similar'''
 ```
-
-
-
-
-    'This metric got worse, although the plot looks fairly similar'
-
-
 
 #### Independence
 
@@ -826,13 +587,6 @@ Your answer here
 But we have still not exceeded the threshold of 5."""
 ```
 
-
-
-
-    'The VIF metrics are getting higher, which means that there is stronger multicollinearity.  \nBut we have still not exceeded the threshold of 5.'
-
-
-
 Below, you will find an example summary of how one might use the linear regression models shown above to address the questions posed at the beginning of the notebook.
 
 # Summary
@@ -842,7 +596,7 @@ The final model for this lesson had three input features: Schooling, Adult_Morta
 
 We are able to address the following questions from above:
 
-1. Does various predicting factors which has been chosen initially really affect the Life expectancy? What are the predicting variables actually affecting the life expectancy?
+1. Do various predicting factors which have been chosen initially really affect the Life expectancy? What are the predicting variables actually affecting the life expectancy?
 
 With only 3 features we are able to explain about 71% of the variance in life expectancy. This indicates that these factors truly are explanatory. More analysis is required to understand how much additional explanatory power would be provided by incorporating additional features into the model.
 
@@ -854,14 +608,14 @@ So far we have only investigated adult mortality. The adult mortality rate ("pro
 
 In our latest model, we find that each additional year of average schooling is associated with 1.4 years of added life expectancy. However it is challenging to interpret whether it is schooling that is actually having the impact. Schooling is highly correlated with Income_Composition_of_Resources ("Human Development Index in terms of income composition of resources") so it is very possible that schooling is the result of some underlying factor that also impacts life expectancy, rather than schooling impacting life expectancy directly.
 
-### 4. Further exercises
+### 4. Appendix
 
-# Appendix
+
 Things we have not done in this lesson, but that you should consider in your project:  
 
-More robust cleaning (possible imputation of missing values, principled exclusion of some data)  
-Feature scaling  
-Nearest-neighbors approach (requires more complex feature engineering)  
-Pulling information from external resources  
-Removing independent variables if you determine that they are causing too high of multicollinearity  
-Setting up functions so the code is not so repetitive  
+- More robust cleaning (possible imputation of missing values, principled exclusion of some data)  
+- Feature scaling  
+- Nearest-neighbors approach (requires more complex feature engineering)  
+- Pulling information from external resources  
+- Removing independent variables if you determine that they are causing too high of multicollinearity  
+- Setting up functions so the code is not so repetitive  

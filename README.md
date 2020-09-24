@@ -54,7 +54,7 @@ Looking at the original website, it looks like the **prices are listed in lakhs,
 
 The datasets is located in a file called `cars.csv` in the `data` directory.
 
-# 1. FSM
+## 1. FSM
 
 ### Load in the dataset and check the overall shape
 
@@ -228,7 +228,7 @@ What will our model predict the value of sale price to be for a car originally w
 # Your answer here
 ```
 
-# Check the assumptions of Linear Regression
+### Check the assumptions of Linear Regression
 
 #### 1. Linearity
 
@@ -332,7 +332,7 @@ What does the p-value returned above indicate? Can you reject the null hypothesi
 
 The independence assumption means that the independent variables must not be too collinear.  Right now we have only one independent variable, so we don't need to check this yet.
 
-## Train a model with `sklearn`
+### Train a model with `sklearn`
 The `sklearn` interface is simpler than StatsModels, but it does not give us the super helpful StatsModels output.  We will, however, use its syntax consistently with other algorithms.
 
 You can skip this step if you are short on time, since it is more relevant for Phase 3 than Phase 2
@@ -376,9 +376,9 @@ print(beta)
 print(intercept)
 ```
 
-# 2. Iterate: Build a better model - Add another numerical feature
+## 2. Iterate: Build a better model - Add another numerical feature
 
-## Adding Features to the Model
+### Adding Features to the Model
 
 So far, all we have is a simple linear regression.  Let's start adding features to make it a multiple regression.
 
@@ -446,7 +446,7 @@ model_2 = None
 # Your answer here (code and interpretation)
 ```
 
-## Independence
+#### Independence
 
 You might have noticed in the regression output that there was a warning about the condition number being high. The condition number is a measure of stability of the matrix used for computing the regression (we'll discuss this more in the next module), and a number above 30 can indicate strong multicollinearity. Our output is way higher than that.
 
@@ -468,7 +468,7 @@ vif_df
 
 A "rule of thumb" for VIF is that 5 is too high.  Given the output above, it's reasonable to say that we are not violating the independence assumption, despite the high condition number.
 
-### 3. Iterate: Build a better model - Add a categorical feature
+## 3. Iterate: Build a better model - Add a categorical feature
 
 
 Rather than adding any more numeric features (e.g. `Year`, `Owner`), let's add a categorical one. Out of `Seller_Type` and `Transmission`, which one looks better?
@@ -570,7 +570,7 @@ Did the R_squared improve?
 # Your answer here
 ```
 
-# Let's look at the model assumptions again
+### Let's look at the model assumptions again
 
 #### Linearity, Normality, Homoscedasticity, Independence
 
@@ -599,12 +599,6 @@ For each, are we violating the assumption? Have we improved from the previous mo
 
 ```python
 
-```
-
-
-```python
-#_SOLUTION__
-"""This is slightly worse than previous, but is still not violating the assumption"""
 ```
 
 ## Conclusion
